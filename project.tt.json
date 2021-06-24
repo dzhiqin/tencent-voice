@@ -1,0 +1,13 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "register_by_voice_weapp",
+  "description": "taro app ",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}
