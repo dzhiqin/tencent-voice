@@ -1,3 +1,4 @@
+import path from 'path'
 const config = {
   projectName: 'register_by_voice_weapp',
   date: '2021-6-24',
@@ -17,6 +18,9 @@ const config = {
     ],
     options: {
     }
+  },
+  alias: {
+    '@/components': path.resolve(__dirname, '..', 'src/components'),
   },
   framework: 'vue',
   mini: {

@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import './app.less'
-
+import 'taro-ui-vue/dist/style/index.scss'
 const App = {
   onShow (options) {
   },

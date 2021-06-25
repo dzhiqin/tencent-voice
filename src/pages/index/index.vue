@@ -1,45 +1,97 @@
 <template>
   <view class="index">
-    <view class="index">
-    <AtNoticebar marquee>
-      欢迎使用 Taro UI Vue
-    </AtNoticebar>
-    <AtButton
-      type="primary"
+    <AtTabs
+      :current="current"
+      scroll
+      height="100vh"
+      tab-direction="vertical"
+      :tab-list="[
+        { title: '标签页1' },
+        { title: '标签页2' },
+        { title: '标签页3' },
+        { title: '标签页4' },
+        { title: '标签页5' },
+        { title: '标签页6' },
+      ]"
       :on-click="handleClick"
     >
-      AtButton
-    </AtButton>
-    <AtToast :is-opened="show" :text="msg" :on-close="handleClose"></AtToast>
-  </view>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="0"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页一的内容
+        </view>
+      </AtTabsPane>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="1"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页二的内容
+        </view>
+      </AtTabsPane>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="2"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页三的内容
+        </view>
+      </AtTabsPane>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="3"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页四的内容
+        </view>
+      </AtTabsPane>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="4"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页五的内容
+        </view>
+      </AtTabsPane>
+      <AtTabsPane
+        tab-direction="vertical"
+        :current="current"
+        :index="5"
+      >
+        <view style="font-size:18px;text-align:center;height:100vh;">
+          标签页六的内容
+        </view>
+      </AtTabsPane>
+    </AtTabs>
+    <register-paster />
   </view>
 </template>
 
 <script>
-// 按需引入, 更小的应用体积
-import { AtButton, AtToast, AtNoticebar } from 'taro-ui-vue'
-import "taro-ui-vue/dist/style/components/button.scss"
-import "taro-ui-vue/dist/style/components/toast.scss"
-import "taro-ui-vue/dist/style/components/noticebar.scss"
+import RegisterPaster from '@/components/register-paster/register-paster.vue'
+import { AtTabs, AtTabsPane } from 'taro-ui-vue'
 import './index.less' 
 export default {
-    components: {
-    AtButton,
-    AtToast,
-    AtNoticebar
+  components: {
+    AtTabs,
+    AtTabsPane,
+    RegisterPaster
   },
   data () {
     return {
-      msg: 'Hello world!',
-      show: false
+      current: 0,
     }
   },
   methods: {
-    handleClick () {
-      this.show = true
-    },
-    handleClose () {
-      this.show = false
+    handleClick (value) {
+      this.current = value
     }
   },
     }
