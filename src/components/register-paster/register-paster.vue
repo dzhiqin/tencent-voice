@@ -172,7 +172,6 @@ export default {
       console.log('touch start', event);
       this.imageSrc = '../../assets/microphone-selected.png'
       this.displayStyle = { display: 'block' }
-
       this.setTimer()
       // this.speechRecognizeStart()
       this.recordStart()
@@ -221,11 +220,8 @@ export default {
   },
   data() {
     return {
-      pasterCom: null,
       msgList: [],
-      enable: false,
       imageSrc: '../../assets/microphone.png',
-      timer: undefined,
       duration: 0,
       displayStyle: {
         display: 'none'
