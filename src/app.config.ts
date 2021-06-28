@@ -26,5 +26,11 @@ export default {
         selectedIconPath: 'assets/list-selected.png'
       }
     ]
+  },
+  "plugins": {
+    "QCloudAIVoice": {
+      "version": "1.3.0",
+      "provider": "wx3e17776051baf153"
+    }
   }
 }

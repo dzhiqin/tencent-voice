@@ -9,6 +9,7 @@
 
 <script>
   import { AtList, AtListItem } from 'taro-ui-vue'
+  import { hello } from '@/api'
   import Taro from '@tarojs/taro'
   export default {
     name: 'RegistionList',
@@ -23,6 +24,14 @@
           url: '/pages/register-detail/register-detail'
         })
       }
+    },
+    onshow() {
+      console.log('list-onshow');
+    },
+    mounted() {
+      hello().then(res => {
+        // console.log('res',res);
+      })
     },
     data() {
       return {

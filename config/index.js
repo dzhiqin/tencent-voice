@@ -21,6 +21,8 @@ const config = {
   },
   alias: {
     '@/components': path.resolve(__dirname, '..', 'src/components'),
+    '@/assets': path.resolve(__dirname, '..', 'src/assets'),
+    '@/api': path.resolve(__dirname, '..', 'src/service/api')
   },
   framework: 'vue',
   mini: {
