@@ -1,13 +1,24 @@
 <template>
-  <view class="paster-container">
-    <view class="paster-message">
-      {{ msg }}
+  <view class="wrap">
+    <view class="mask" :style="displayStyle">
+      <sound-wave></sound-wave>
     </view>
-    <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
-      <image :src="imageSrc" class="paster-image" />
-      <view class="paster-text">{{ microphoneStatus }} </view>
+    <view class="paster-container">
+      <view class="paster-message">
+        <view  @tap="handleClearMsg">
+          <AtIcon value='close-circle' size='20' color='#FFF' class="paster-close" :style="closeCircleStyle"></AtIcon>
+        </view>
+        <view v-for="item in msgList" :key="item">
+          {{ item }}
+        </view>
+      </view>
+      <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
+        <image :src="imageSrc" class="paster-image" />
+        <view class="paster-text">按住说话</view>
+      </view>
     </view>
   </view>
+  
 </template>
 
 <script>
@@ -15,8 +26,8 @@ import Taro from '@tarojs/taro'
 import './register-paster.less'
 import { log } from 'util';
 import { setInterval, clearInterval } from 'timers';
-import { AtToast } from 'taro-ui-vue'
-
+import { AtIcon } from 'taro-ui-vue'
+import SoundWave from '@/components/sound-wave/sound-wave.vue'
 const text = "腾讯云基于业界领先技术构建的语音合成系统，具备合成速度快、合成拟真度高、语音自然流畅等特点，能够应用于多种使用场景，让设备和应用轻松发声。"
 const recorderManager = wx.getRecorderManager()  // 获取全局唯一的录音管理器 RecorderManager
 const innerAudioContext = wx.createInnerAudioContext()  // 创建内部 audio 上下文 InnerAudioContext 对象。
@@ -28,7 +39,16 @@ let timer = undefined;
 export default {
   name: 'RegisterPaster',
   components: {
-    AtToast
+    AtIcon,
+    SoundWave
+  },
+  computed: {
+    closeCircleStyle() {
+      const style = {
+        display: this.msgList.length ? '' : 'none'
+      }
+      return style
+    }
   },
   mounted () {
     manager.onStart((res) => {
@@ -56,21 +76,22 @@ export default {
           icon: 'none',
           duration: 2000
         })
+      } else if( this.duration > 60 ){
+        Taro.showToast({
+          title: '语音过长',
+          icon: 'none',
+          duration: 2000
+        })
       } else {
         this.sentenceRecognize(frameBuffer)
       }
     })
   },
-  beforeDestroy() {
-    console.log('beforeDestroy')
-    this.msg = ''
-    this.speechRecognizeStop()
-  },
-  onShow() {
-    console.log('onshow')
-    this.msg = ''
-  },
   methods: {
+    handleClearMsg() {
+      console.log('clear msg');
+      this.msgList = []
+    },
     sentenceRecognize(frameBuffer) {
       // 一句话语音识别
       const buf = wx.arrayBufferToBase64(frameBuffer)
@@ -89,12 +110,14 @@ export default {
         // filterPunc: 0,
         // convertNumMode : 0,
         success: (data) => {
-            console.log('sentenceRecognition succ:', data.result)
-            this.msg = data.result
+          const result = data.result
+          if(result) {
+            this.msgList.push(data.result)
+          }
         },
         fail: (err) => {
-            console.log('sentenceRecognition error:', err)
-            this.msg = err.Error.Message
+          console.log('sentenceRecognition error:', err)
+          this.msgList.push(err.Error.Message)
         }
       })
     },
@@ -136,7 +159,7 @@ export default {
       manager.onRecognize((res) => {
         if(res.result || res.resList){
             console.log("识别结果", res.result);
-            this.msg = res.result
+            this.msgList.push(res.result)
         }else if(res.errMsg){
           console.log("recognize error", res.errMsg);
         }
@@ -148,6 +171,8 @@ export default {
     touchStart(event) {
       console.log('touch start', event);
       this.imageSrc = '../../assets/microphone-selected.png'
+      this.displayStyle = { display: 'block' }
+
       this.setTimer()
       // this.speechRecognizeStart()
       this.recordStart()
@@ -156,6 +181,7 @@ export default {
       console.log('touch end')
       clearInterval(timer)
       this.imageSrc = '../../assets/microphone.png'
+      this.displayStyle = { display: 'none' }
       // this.speechRecognizeStop()
       this.recordStop()
     },
@@ -183,7 +209,7 @@ export default {
             innerAudioContext.onPlay(() => {
             });
             innerAudioContext.onError((res) => {
-                console.log(res.errMsg)
+              console.log(res.errMsg)
             });
           }
         },
@@ -196,12 +222,14 @@ export default {
   data() {
     return {
       pasterCom: null,
-      msg: '',
-      microphoneStatus: '按住说话',
+      msgList: [],
       enable: false,
       imageSrc: '../../assets/microphone.png',
       timer: undefined,
-      duration: 0
+      duration: 0,
+      displayStyle: {
+        display: 'none'
+      }
     }
   },
 }
