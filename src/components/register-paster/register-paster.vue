@@ -32,7 +32,8 @@ const text = "腾讯云基于业界领先技术构建的语音合成系统，具
 const recorderManager = wx.getRecorderManager()  // 获取全局唯一的录音管理器 RecorderManager
 const innerAudioContext = wx.createInnerAudioContext()  // 创建内部 audio 上下文 InnerAudioContext 对象。
 let plugin = requirePlugin("QCloudAIVoice");  //引入语音识别插件
-plugin.setQCloudSecret(1253741438, "AKIDKY3taF9ARtqiS2AEfy6Yq3ENNF1NofZJ", "GQQH0gEbteKrDUbYQBJMG0gCZnuTtBIP", true);//设置腾讯云账号信息，其中appid是数字，secret是字符串，openConsole是布尔值(true/false)，为控制台打印日志开关
+// 访问 https://console.cloud.tencent.com/cam/capi 获取appid secretId, secretKey
+plugin.setQCloudSecret('appid', "secretId", "secretKey", true);//设置腾讯云账号信息，其中appid是数字，secret是字符串，openConsole是布尔值(true/false)，为控制台打印日志开关
 let manager = plugin.getRecordRecognitionManager();  //获取全局唯一的语音识别管理器
 let timer = undefined;
 
