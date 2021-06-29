@@ -27,8 +27,9 @@ import './register-paster.less'
 import { log } from 'util';
 import { setInterval, clearInterval } from 'timers';
 import { AtIcon } from 'taro-ui-vue'
+import { voiceRegister } from '@/api'
 import SoundWave from '@/components/sound-wave/sound-wave.vue'
-const text = "腾讯云基于业界领先技术构建的语音合成系统，具备合成速度快、合成拟真度高、语音自然流畅等特点，能够应用于多种使用场景，让设备和应用轻松发声。"
+// const text = "腾讯云基于业界领先技术构建的语音合成系统，具备合成速度快、合成拟真度高、语音自然流畅等特点，能够应用于多种使用场景，让设备和应用轻松发声。"
 const recorderManager = wx.getRecorderManager()  // 获取全局唯一的录音管理器 RecorderManager
 const innerAudioContext = wx.createInnerAudioContext()  // 创建内部 audio 上下文 InnerAudioContext 对象。
 let plugin = requirePlugin("QCloudAIVoice");  //引入语音识别插件
@@ -51,6 +52,44 @@ export default {
     }
   },
   mounted () {
+    wx.authorize({
+      scope: 'scope.record',
+      success: () => {
+        console.log('get record permission success');
+      },
+      fail: () =>{
+        Taro.showModal({
+          title: '提示',
+          content: '您未授权录音，功能将无法使用',
+          confirmText: '授权',
+          success: function (res) {
+            if (res.confirm) {
+              console.log('用户点击确定')
+              wx.openSetting({
+                success: (res) => {
+                  if (!res.authSetting['scope.record']) {
+                    Taro.showToast({
+                      title: '您未授权录音，功能将无法使用',
+                      icon: 'none'
+                    })
+                  } else {
+                    Taro.showToast({
+                      title: '授权成功',
+                      icon: 'success'
+                    })
+                  }
+                }
+              })
+            } else if (res.cancel) {
+              Taro.showToast({
+                title: '您未授权录音，功能将无法使用',
+                icon: 'none'
+              })
+            }
+          }
+        })
+      }
+    })
     manager.onStart((res) => {
       console.log('recorder start', res.msg);
     })
@@ -89,7 +128,6 @@ export default {
   },
   methods: {
     handleClearMsg() {
-      console.log('clear msg');
       this.msgList = []
     },
     sentenceRecognize(frameBuffer) {
@@ -110,14 +148,15 @@ export default {
         // filterPunc: 0,
         // convertNumMode : 0,
         success: (data) => {
-          const result = data.result
-          if(result) {
-            this.msgList.push(data.result)
+          const message = data.result
+          if(message) {
+            this.msgList.push(message)
+            this.handleDialog(message)
           }
         },
         fail: (err) => {
           console.log('sentenceRecognition error:', err)
-          this.msgList.push(err.Error.Message)
+          // this.msgList.push(err)
         }
       })
     },
@@ -141,6 +180,7 @@ export default {
     },
     recordStop() {
       recorderManager.stop()
+      clearInterval(timer)
     },
     speechRecognizestart() {
       // 实时语音识别
@@ -169,28 +209,38 @@ export default {
       manager.stop();
     },
     touchStart(event) {
-      console.log('touch start', event);
       this.imageSrc = '../../assets/microphone-selected.png'
       this.displayStyle = { display: 'block' }
       this.setTimer()
-      // this.speechRecognizeStart()
       this.recordStart()
     },
     touchEnd(event) {
-      console.log('touch end')
       clearInterval(timer)
       this.imageSrc = '../../assets/microphone.png'
       this.displayStyle = { display: 'none' }
-      // this.speechRecognizeStop()
       this.recordStop()
     },
     handleClick() {
+      // this.handleDialog('帮我挂今天下午4点钟南山医生的号')
       // this.textToSpeech()
       // Taro.navigateTo({
       //   url: '/pages/register/register'
       // })
     },
-    textToSpeech(){
+    handleDialog(message) {
+      voiceRegister({
+        'req_text': message
+      }).then(res => {
+        console.log('voice register res=',res);
+        Taro.showToast({
+          title:res,
+          icon: 'none'
+        })
+        this.msgList.push(res)
+        this.textToSpeech(res)
+      })
+    },
+    textToSpeech(text){
       plugin.textToSpeech({
         content: text,
         speed: 0,
@@ -220,7 +270,8 @@ export default {
   },
   data() {
     return {
-      msgList: [],
+      // msgList: [],
+      msgList: ['春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生'],
       imageSrc: '../../assets/microphone.png',
       duration: 0,
       displayStyle: {
