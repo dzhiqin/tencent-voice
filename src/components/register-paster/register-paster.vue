@@ -8,7 +8,7 @@
         <view  @tap="handleClearMsg">
           <AtIcon value='close-circle' size='20' color='#FFF' class="paster-close" :style="closeCircleStyle"></AtIcon>
         </view>
-        <view v-for="item in msgList" :key="item">
+        <view v-for="item in msgList" :key="item" class="paster-message-item">
           {{ item }}
         </view>
       </view>
@@ -270,8 +270,7 @@ export default {
   },
   data() {
     return {
-      // msgList: [],
-      msgList: ['春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生。春江潮水连海平，海上明月共潮生'],
+      msgList: [],
       imageSrc: '../../assets/microphone.png',
       duration: 0,
       displayStyle: {
