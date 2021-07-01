@@ -4,16 +4,21 @@
       <sound-wave></sound-wave>
     </view>
     <view class="paster-container">
-      <view class="paster-message">
+      <view class="paster-message" :style="closeCircleStyle">
         <view  @tap="handleClearMsg">
           <AtIcon value='close-circle' size='20' color='#FFF' class="paster-close" :style="closeCircleStyle"></AtIcon>
         </view>
-        <view v-for="item in msgList" :key="item" class="paster-message-item">
+        <view v-for="(item, index) in msgList" :key="index" class="paster-message-item">
           {{ item }}
         </view>
+        <template>
+          <AtActivityIndicator v-show="loading" mode='center'></AtActivityIndicator>
+        </template>
+
       </view>
       <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
         <image :src="imageSrc" class="paster-image" />
+        <image src="../../assets/speaking.png" style="display: none;" />
         <view class="paster-text">按住说话</view>
       </view>
     </view>
@@ -26,7 +31,7 @@ import Taro from '@tarojs/taro'
 import './register-paster.less'
 import { log } from 'util';
 import { setInterval, clearInterval } from 'timers';
-import { AtIcon } from 'taro-ui-vue'
+import { AtIcon, AtActivityIndicator } from 'taro-ui-vue'
 import { voiceRegister } from '@/api'
 import SoundWave from '@/components/sound-wave/sound-wave.vue'
 // const text = "腾讯云基于业界领先技术构建的语音合成系统，具备合成速度快、合成拟真度高、语音自然流畅等特点，能够应用于多种使用场景，让设备和应用轻松发声。"
@@ -41,7 +46,8 @@ export default {
   name: 'RegisterPaster',
   components: {
     AtIcon,
-    SoundWave
+    SoundWave,
+    AtActivityIndicator
   },
   computed: {
     closeCircleStyle() {
@@ -150,7 +156,8 @@ export default {
         success: (data) => {
           const message = data.result
           if(message) {
-            this.msgList.push(message)
+            // this.msgList.push(message)
+            this.reloadMessage(message)
             this.handleDialog(message)
           }
         },
@@ -199,17 +206,22 @@ export default {
       manager.onRecognize((res) => {
         if(res.result || res.resList){
             console.log("识别结果", res.result);
-            this.msgList.push(res.result)
+            // this.msgList.push(res.result)
+            this.reloadMessage(res.result)
         }else if(res.errMsg){
           console.log("recognize error", res.errMsg);
         }
       })
     },
+    reloadMessage (message) {
+      this.msgList.push(message)
+      this.msgList = this.msgList.slice(-2)
+    },
     speechRecognizeStop: function() {
       manager.stop();
     },
     touchStart(event) {
-      this.imageSrc = '../../assets/microphone-selected.png'
+      this.imageSrc = '../../assets/speaking.png'
       this.displayStyle = { display: 'block' }
       this.setTimer()
       this.recordStart()
@@ -221,23 +233,32 @@ export default {
       this.recordStop()
     },
     handleClick() {
-      // this.handleDialog('帮我挂今天下午4点钟南山医生的号')
+      // this.handleDialog('帮我挂今天下午4点钟消化内科的号')
       // this.textToSpeech()
       // Taro.navigateTo({
       //   url: '/pages/register/register'
       // })
     },
     handleDialog(message) {
+      this.loading = true
       voiceRegister({
         'req_text': message
       }).then(res => {
         console.log('voice register res=',res);
-        Taro.showToast({
-          title:res,
-          icon: 'none'
-        })
-        this.msgList.push(res)
-        this.textToSpeech(res)
+        // Taro.showToast({
+        //   title:res,
+        //   icon: 'none'
+        // })
+        // this.msgList.push(res.text)
+        this.reloadMessage(res.text)
+        this.textToSpeech(res.text)
+        if(res.action === 'auto_appointment') {
+          const registion = `${res.department},${res.person},预约时间${res.time}`
+          this.reloadMessage(registion)
+        }
+        
+      }).finally(() => {
+        this.loading = false
       })
     },
     textToSpeech(text){
@@ -270,6 +291,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       msgList: [],
       imageSrc: '../../assets/microphone.png',
       duration: 0,
