@@ -3,23 +3,24 @@
     <view class="mask" :style="displayStyle">
       <sound-wave></sound-wave>
     </view>
-    <view class="paster-container">
-      <view class="paster-message" :style="closeCircleStyle">
-        <view  @tap="handleClearMsg">
-          <AtIcon value='close-circle' size='20' color='#FFF' class="paster-close" :style="closeCircleStyle"></AtIcon>
-        </view>
-        <view v-for="(item, index) in msgList" :key="index" class="paster-message-item">
+    <view class="message" :style="closeCircleStyle" @tap="handleOutSideClick">
+      <view class="message-list" @tap.stop="handleInsideClick">
+        <!-- <view  @tap="handleClearMsg">
+          <AtIcon value='close-circle' size='20' color='#FFF' class="message-close"></AtIcon>
+        </view> -->
+        <view v-for="(item, index) in msgList" :key="index" class="message-list-item">
           {{ item }}
         </view>
-        <template>
-          <AtActivityIndicator v-show="loading" mode='center'></AtActivityIndicator>
-        </template>
-
       </view>
+      <template>
+        <AtActivityIndicator v-show="loading" mode='center'></AtActivityIndicator>
+      </template>
+    </view>
+    <view class="paster">
       <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
         <image :src="imageSrc" class="paster-image" />
         <image src="../../assets/speaking.png" style="display: none;" />
-        <view class="paster-text">按住说话</view>
+        <view class="paster-text">智能导诊</view>
       </view>
     </view>
   </view>
@@ -133,6 +134,13 @@ export default {
     })
   },
   methods: {
+    handleOutSideClick(e) {
+      this.msgList = []
+      console.log('outside click');
+    },
+    handleInsideClick(e) {
+      e.preventDefault();
+    },
     handleClearMsg() {
       this.msgList = []
     },
@@ -148,7 +156,7 @@ export default {
         dataLen: frameBuffer.byteLength,
         projectId: 0,
         // 以下为非必填参数，可跟据业务自行修改
-        // hotwordId : '08003a00000000000000000000000000',
+        hotwordId : '9d1de835d95511eba4de446a2eb5fd98',
         // filterDirty: 0,
         // filterModal: 0,
         // filterPunc: 0,
@@ -214,8 +222,8 @@ export default {
       })
     },
     reloadMessage (message) {
-      this.msgList.push(message)
-      this.msgList = this.msgList.slice(-2)
+      this.msgList.unshift(message)
+      // this.msgList = this.msgList.slice(-3)
     },
     speechRecognizeStop: function() {
       manager.stop();
@@ -253,7 +261,7 @@ export default {
         this.reloadMessage(res.text)
         this.textToSpeech(res.text)
         if(res.action === 'auto_appointment') {
-          const registion = `${res.department},${res.person},预约时间${res.time}`
+          const registion = `${res.department},预约时间${res.time}`
           this.reloadMessage(registion)
         }
         
