@@ -11,10 +11,11 @@
         <view v-for="(item, index) in msgList" :key="index" class="message-list-item">
           {{ item }}
         </view>
+        <template>
+          <AtActivityIndicator v-show="loading" mode='center'></AtActivityIndicator>
+        </template>
       </view>
-      <template>
-        <AtActivityIndicator v-show="loading" mode='center'></AtActivityIndicator>
-      </template>
+      
     </view>
     <view class="paster">
       <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
@@ -258,13 +259,12 @@ export default {
         //   icon: 'none'
         // })
         // this.msgList.push(res.text)
-        this.reloadMessage(res.text)
-        this.textToSpeech(res.text)
         if(res.action === 'auto_appointment') {
-          const registion = `${res.department},预约时间${res.time}`
+          const registion =  (res.department ? `预约科室:${res.department}。` : '') + (res.time ? `预约时间:${res.time}` : '')
           this.reloadMessage(registion)
         }
-        
+        this.reloadMessage(res.text)
+        this.textToSpeech(res.text)
       }).finally(() => {
         this.loading = false
       })
