@@ -21,7 +21,7 @@
         :index="0"
       >
         <view style="font-size:18px;text-align:center;height:100vh;">
-          标签页一的内容
+          <xunfei></xunfei>
         </view>
       </AtTabsPane>
       <AtTabsPane
@@ -76,13 +76,16 @@
 
 <script>
 import RegisterPaster from '@/components/register-paster/register-paster.vue'
-import { AtTabs, AtTabsPane } from 'taro-ui-vue'
+import Xunfei from '@/components/xunfei/xunfei.vue'
+import { AtTabs, AtTabsPane, AtButton } from 'taro-ui-vue'
 import './index.less' 
 export default {
   components: {
     AtTabs,
     AtTabsPane,
-    RegisterPaster
+    RegisterPaster,
+    Xunfei,
+    AtButton
   },
   data () {
     return {
