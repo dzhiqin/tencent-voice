@@ -34,12 +34,6 @@ import Taro from '@tarojs/taro'
       })
       recorderManager.onFrameRecorded((res) => {
         const { frameBuffer, isLastFrame } = res
-        console.log('onFrameRecorded', res);
-        const int16Arr = new Int8Array(res.frameBuffer)
-        const base64Buffer = wx.arrayBufferToBase64(int16Arr)
-        // console.log('frameBuffer',frameBuffer);
-        // console.log('int16Arr',int16Arr)
-        // console.log('base64Buffer',base64Buffer);
         const params = {
           common: {
             app_id: APPID,
@@ -55,7 +49,7 @@ import Taro from '@tarojs/taro'
             status: this.isFirstSend ? 0 : 1,
             format: 'audio/L16;rate=16000',
             encoding: 'raw',
-            audio: base64Buffer
+            audio: wx.arrayBufferToBase64(frameBuffer)
           }
         }
         let status = 0
@@ -72,6 +66,10 @@ import Taro from '@tarojs/taro'
           },
           fail: (err) => {
             console.log('send error: ', JSON.stringify(err));
+            Taro.showToast({
+              title: JSON.stringify(err),
+              icon: 'none'
+            })
           },
           completed: () => {
             if(isLastFrame) {
