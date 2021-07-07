@@ -2,7 +2,7 @@
   <view class="register-page">
     register
     <view class="voice-panel">
-      <image src='@/assets/microphone.png' class="voice-panel-img"/>
+      <image src='@/assets/speaking.png' class="voice-panel-img"/>
       <view class="vioce-panel-input">
         <AtInput name="message" type="text" placeholder="" :value="message" :onChange="handleInput"></AtInput>
       </view>

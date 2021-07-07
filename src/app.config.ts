@@ -12,12 +12,13 @@ export default {
     navigationBarTextStyle: 'black'
   },
   tabBar: {
+    selectedColor: '#1296db',
     list: [
       {
         pagePath: "pages/index/index",
         text: '微信语音',
-        iconPath: 'assets/register.png',
-        selectedIconPath: 'assets/register-selected.png'
+        iconPath: 'assets/home.png',
+        selectedIconPath: 'assets/home-selected.png'
       },
       {
         pagePath: "pages/register-detail/register-detail",

@@ -1,8 +1,8 @@
 <template>
   <view class="wrap">
-    <view class="mask" :style="displayStyle">
+    <!-- <view class="mask" :style="displayStyle">
       <sound-wave></sound-wave>
-    </view>
+    </view> -->
     <view class="message" :style="closeCircleStyle" @tap="handleOutSideClick">
       <view class="message-list" @tap.stop="handleInsideClick">
         <!-- <view  @tap="handleClearMsg">
@@ -18,11 +18,13 @@
       
     </view>
     <view class="paster">
-      <view class="paster-body" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
-        <image :src="imageSrc" class="paster-image" />
-        <image src="../../assets/speaking.png" style="display: none;" />
+      <view class="paster-wrap">
+        <view :class="[isActive ? 'ripple' : '', 'paster-body']" @tap="handleClick" @touchStart="touchStart" @touchEnd="touchEnd">
+          <image src="../../assets/speaking.png" class="paster-image" />
+        </view>
         <view class="paster-text">智能导诊</view>
       </view>
+
     </view>
   </view>
   
@@ -230,15 +232,13 @@ export default {
       manager.stop();
     },
     touchStart(event) {
-      this.imageSrc = '../../assets/speaking.png'
-      this.displayStyle = { display: 'block' }
+      this.isActive = true
       this.setTimer()
       this.recordStart()
     },
     touchEnd(event) {
       clearInterval(timer)
-      this.imageSrc = '../../assets/microphone.png'
-      this.displayStyle = { display: 'none' }
+      this.isActive = false
       this.recordStop()
     },
     handleClick() {
@@ -301,11 +301,11 @@ export default {
     return {
       loading: false,
       msgList: [],
-      imageSrc: '../../assets/microphone.png',
       duration: 0,
       displayStyle: {
         display: 'none'
-      }
+      },
+      isActive: false
     }
   },
 }

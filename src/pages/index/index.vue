@@ -1,5 +1,6 @@
 <template>
   <view class="index">
+    <image src="../../assets/bg.png" class="bg" />
     <register-paster />
   </view>
 </template>
