@@ -105,7 +105,6 @@ export default {
     })
     manager.onStop((res) => {
       console.log('recorder stop', res.tempFilePath);
-      // clearInterval(init) // 取消之前的计时
     })
     manager.onError((res) => {
       console.log('recorder error', res.errMsg); // 打印录音识别错误信息
@@ -116,6 +115,18 @@ export default {
     recorderManager.onStop((res) => {
       const { tempFilePath } = res
       console.log('record end', tempFilePath);
+      // 上传文件
+      Taro.uploadFile({
+        filePath: tempFilePath,
+        name: 'audio_file',
+        url: 'http://192.168.2.34:3001/api/voice_detect/',
+        success: (res) => {
+          console.log('upload success', res);
+        },
+        fail: (err) => {
+          console.log('upload err', err)
+        }
+      })
     })
     recorderManager.onFrameRecorded((res) => {
       const { frameBuffer } = res
@@ -188,9 +199,12 @@ export default {
     recordStart() {
       const params = {
         duration: 60000,
-        sampleRate: 16000,
-        numberOfChannels: 2,
-        encodeBitRate: 48000,
+        // sampleRate: 16000,
+        // numberOfChannels: 2,
+        // encodeBitRate: 48000,
+        sampleRate: 8000,
+        numberOfChannels: 1,
+        encodeBitRate: 16000,
         format: 'mp3',
         frameSize: 50
       }
@@ -265,6 +279,8 @@ export default {
         }
         this.reloadMessage(res.text)
         this.textToSpeech(res.text)
+      }).catch(err => {
+        console.log('voice register err',err);
       }).finally(() => {
         this.loading = false
       })

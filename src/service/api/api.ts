@@ -1,4 +1,4 @@
-import { Get, fullUrl } from "../http";
+import { Get, fullUrl, Post } from "../http";
 export const hello = () => {
   return Get('http://baidu.com')
 }
