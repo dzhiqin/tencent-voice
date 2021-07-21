@@ -1,9 +1,7 @@
 export default {
   pages: [
     'pages/index/index',
-    'pages/registion-list/registion-list',
-    'pages/register/register',
-    'pages/register-detail/register-detail'
+    'pages/xunfei/xunfei'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -21,7 +19,7 @@ export default {
         selectedIconPath: 'assets/home-selected.png'
       },
       {
-        pagePath: "pages/register-detail/register-detail",
+        pagePath: "pages/xunfei/xunfei",
         text: '讯飞语音',
         iconPath: 'assets/list.png',
         selectedIconPath: 'assets/list-selected.png'

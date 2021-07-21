@@ -1,4 +1,4 @@
-import Taro from '@tarojs/taro'
+import * as Taro from '@tarojs/taro'
 
 interface Response {
   code: number
@@ -15,7 +15,19 @@ export interface DownloadResponse extends Response {
 export interface UploadResponse extends Response {
   data?: object | string
 }
-
+const getHeaderAuth = () => {
+  let auth = Taro.getStorageSync('auth')
+  let headerAuth = {}
+  if(auth) {
+    auth = JSON.parse(auth)
+    headerAuth = {
+      'access-token': auth ? auth.accessToken : '',
+      client: auth ? auth.client : '',
+      uid: auth ? auth.uid : ''
+    }
+  }
+  return headerAuth
+}
 const Request = (
   method:
     | 'GET'
@@ -35,7 +47,7 @@ const Request = (
       method,
       url,
       data,
-      header,
+      header: Object.assign(getHeaderAuth(), header),
       success: (res: Taro.request.SuccessCallbackResult) => {
         resolve(res.data as HttpResponse)
       },
@@ -82,7 +94,7 @@ const UploadFile = (
       url,
       filePath,
       name,
-      header,
+      header: Object.assign(getHeaderAuth(), header),
       formData,
       success: (res: Taro.uploadFile.SuccessCallbackResult) => {
         resolve({ code: res.statusCode, data: res.data })

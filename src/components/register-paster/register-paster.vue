@@ -34,9 +34,10 @@
 import Taro from '@tarojs/taro'
 import './register-paster.less'
 import { log } from 'util';
-import { setInterval, clearInterval } from 'timers';
+import { setInterval, clearInterval, setTimeout } from 'timers';
 import { AtIcon, AtActivityIndicator } from 'taro-ui-vue'
 import { voiceRegister } from '@/api'
+import { UploadFile } from '@/http'
 import SoundWave from '@/components/sound-wave/sound-wave.vue'
 // const text = "腾讯云基于业界领先技术构建的语音合成系统，具备合成速度快、合成拟真度高、语音自然流畅等特点，能够应用于多种使用场景，让设备和应用轻松发声。"
 const recorderManager = wx.getRecorderManager()  // 获取全局唯一的录音管理器 RecorderManager
@@ -52,6 +53,36 @@ export default {
     AtIcon,
     SoundWave,
     AtActivityIndicator
+  },
+  props: {
+    onShow: {
+      type: Boolean,
+      default: false
+    },
+    onHide: {
+      type: Boolean,
+      default: false
+    },
+    message: {
+      type: String,
+      default: ''
+    }
+  },
+  watch: {
+    onShow(value,old) {
+      console.log('onshow',value);
+      if(value !== old) {
+        this.show = value
+        this.createConnect()
+      }
+    },
+    onHide(value,old) {
+      console.log('onhide',value);
+      if(value !== old) {
+        this.hide = value
+        this.closeConnect()
+      }
+    }
   },
   computed: {
     closeCircleStyle() {
@@ -116,12 +147,62 @@ export default {
       const { tempFilePath } = res
       console.log('record end', tempFilePath);
       // 上传文件
+      // Taro.uploadFile({
+      //   filePath: tempFilePath,
+      //   name: 'audio_file',
+      //   url: 'http://192.168.2.34:3001/api/voice_detect/',
+      //   success: (res) => {
+      //     console.log('upload success', res);
+      //   },
+      //   fail: (err) => {
+      //     console.log('upload err', err)
+      //   }
+      // })
+      const auth = JSON.parse(Taro.getStorageSync('auth') || null)
       Taro.uploadFile({
         filePath: tempFilePath,
-        name: 'audio_file',
-        url: 'http://192.168.2.34:3001/api/voice_detect/',
+        name: 'chat[audio_file]',
+        url: 'http://192.168.2.34:3001/api/chats/',
+        header: {
+          'access-token': auth ? auth.accessToken : '',
+          client: auth ? auth.client : '',
+          uid: auth ? auth.uid : ''
+        },
+        formData: {
+          'chat[channel]': 'dad',
+          'chat[chat_message]': 'message...',
+          'chat[user_category]': 'customer'
+        },
         success: (res) => {
-          console.log('upload success', res);
+          console.log('upload success', data);
+          const data = JSON.parse(res.data)
+          this.fileDownloadUrl = data.file_download_url
+          Taro.downloadFile({
+            url: 'http://192.168.2.34:3001' + this.fileDownloadUrl,
+             header: {
+              'access-token': auth ? auth.accessToken : '',
+              client: auth ? auth.client : '',
+              uid: auth ? auth.uid : ''
+            },
+            success: (res) => {
+              console.log('download audio',res);
+              if (res.statusCode === 200) {
+                const innerAudioContext = Taro.createInnerAudioContext()
+                innerAudioContext.autoplay = true
+                innerAudioContext.src = res.tempFilePath
+                innerAudioContext.onPlay(() => {
+                  console.log('开始播放')
+                })
+                innerAudioContext.onError((res) => {
+                  console.log(res.errMsg)
+                  console.log(res.errCode)
+                })
+              }
+            },
+            fail: err => {
+              console.log('download fail',err);
+            }
+          })
         },
         fail: (err) => {
           console.log('upload err', err)
@@ -148,6 +229,70 @@ export default {
     })
   },
   methods: {
+    closeConnect() {
+      this.socketTask.close({
+        code: 1000,
+        success: res => {
+          console.log('socket close',res);
+        }
+      })
+    },
+    createConnect() {
+      this.socketTask = wx.connectSocket({
+        url: 'ws://192.168.2.34:3001/cable/',
+        header: {
+          'content-type': 'application/json'
+        },
+        success: res => {
+          console.log('connect', res);
+          setTimeout(() => {
+            this.createSubscribe()
+          },1000)
+        },
+        fail: err => {
+          console.log('connect err',err);
+        }
+      })
+      this.socketTask.onOpen((res) => {
+        console.log('socket open',res);
+      })
+      this.socketTask.onClose(res => {
+        console.log('socket closed',res);
+      })
+      this.socketTask.onMessage( res => {
+        // console.log('get message',res);
+        const data = JSON.parse(res.data)
+        if(data.type !== 'ping') {
+          console.log('get message',data.message);
+        }
+      })
+    },
+    createSubscribe() {
+      this.socketTask.send({
+        data: '\"{\"command\":\"subscribe\",\"identifier\":{\"channel\":\"ChatRoomChannel\"}}\"',
+        success: res => {
+          console.log('subscribe success', res);
+        },
+        fail: err => {
+          console.log('subscribe fail', err);
+        }
+      })
+    },
+    socketSendMsg(params) {
+      console.log('send params',params);
+      this.socketTask.send({
+        data: JSON.stringify(params),
+        success: res => {
+          console.log('send success',res);
+        },
+        fail: err => {
+          console.log('send err', err);
+        },
+        completed: (res) => {
+          console.log('send complete',res);
+        }
+      })
+    },
     handleOutSideClick(e) {
       this.msgList = []
       console.log('outside click');
@@ -315,6 +460,10 @@ export default {
   },
   data() {
     return {
+      fileDownloadUrl: '',
+      socketTask: null,
+      show: undefined,
+      hide: undefined,
       loading: false,
       msgList: [],
       duration: 0,
